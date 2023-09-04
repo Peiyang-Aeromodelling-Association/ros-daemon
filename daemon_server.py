@@ -50,7 +50,7 @@ def get_ros_topic_hz(topic_name):
     lines = list(filter(lambda x: "average rate" in x, lines))
     # get the hz
     try:
-        hz = float(lines[0].split(" ")[0])
+        hz = float(lines[0].split(" ")[-1])
     except Exception as e:  # IndexError
         print(f"Error: {e}")
         hz = 0.0

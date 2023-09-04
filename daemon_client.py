@@ -60,3 +60,7 @@ if __name__ == "__main__":
         console.print(Align.center(process_table, vertical="middle"))
         console.print(Align.center(rostopic_hz_table, vertical="middle"))
         time.sleep(1)
+        # clear the table
+        connection_table.clear_rows()
+        process_table.clear_rows()
+        rostopic_hz_table.clear_rows()
