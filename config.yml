@@ -1,0 +1,19 @@
+server_ip: 192.168.1.189
+server_port: 5001
+
+# check if the process is running
+process_checklist:
+  - "rosmaster"
+  - "baselink_updater"
+  - "mavros"
+  - "task_planner"
+  - "trajectory_planner"
+  - "trajectory_sampler"
+  - "vision_node"  # pseudo_vision_node or vision_node is either acceptable
+
+# rostopic rate monitor list
+rostopic_hz_checklist:
+  - "/waypoints"
+  - "/trajectory"
+  - "/mavros/setpoint_position/local"
+  - "/target"
