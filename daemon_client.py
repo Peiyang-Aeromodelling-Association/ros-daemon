@@ -8,25 +8,26 @@ from rich.console import Console
 from rich.table import Table
 
 console = Console()
-
-connection_table = Table(show_header=True, header_style="bold magenta")
-connection_table.add_column("Connection", style="dim", width=12)
-connection_table.add_column("Status", justify="right")
-
-process_table = Table(show_header=True, header_style="bold magenta")
-process_table.add_column("Process", style="dim", width=12)
-process_table.add_column("Status", justify="right")
-
-rostopic_hz_table = Table(show_header=True, header_style="bold magenta")
-rostopic_hz_table.add_column("Topic", style="dim", width=12)
-rostopic_hz_table.add_column("Rate(hz)", justify="right")
-
 with open("config.yml", "r") as f:
     config = yaml.safe_load(f)
     print(f"{config}")
 
 if __name__ == "__main__":
     while True:
+
+        connection_table = Table(show_header=True, header_style="bold magenta")
+        connection_table.add_column("Connection", style="dim", width=60)
+        connection_table.add_column("Status", justify="right", width=5)
+        
+        process_table = Table(show_header=True, header_style="bold magenta")
+        process_table.add_column("Process", style="dim", width=60)
+        process_table.add_column("Status", justify="right",width=5)
+        
+        rostopic_hz_table = Table(show_header=True, header_style="bold magenta")
+        rostopic_hz_table.add_column("Topic", style="dim", width=60)
+        rostopic_hz_table.add_column("Rate(hz)", justify="right",width=5)
+    
+
         try:
             url = f"http://{config['server_ip']}:{config['server_port']}"
             response = requests.get(url)
@@ -60,7 +61,4 @@ if __name__ == "__main__":
         console.print(Align.center(process_table, vertical="middle"))
         console.print(Align.center(rostopic_hz_table, vertical="middle"))
         time.sleep(1)
-        # clear the table
-        connection_table.clear_rows()
-        process_table.clear_rows()
-        rostopic_hz_table.clear_rows()
+

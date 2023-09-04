@@ -3,6 +3,7 @@ import os
 import uvicorn
 import yaml
 from fastapi import FastAPI
+from func_timeout import func_set_timeout
 
 app = FastAPI()
 
@@ -31,7 +32,7 @@ def check_process_exists(process_name):
 
     return len(lines) > 0
 
-
+@func_set_timeout(6)
 def get_ros_topic_hz(topic_name):
     """
     Get the hz of a ros topic via command line: rostopic hz topic_name
@@ -64,12 +65,22 @@ async def get_status():
     process_status = {}
     for process_name in process_checklist:
         process_status[process_name] = check_process_exists(process_name)
-
-    # check ros topic rate
+    
+    
     rostopic_hz_checklist = config['rostopic_hz_checklist']
     rostopic_hz = {}
-    for topic_name in rostopic_hz_checklist:
-        rostopic_hz[topic_name] = get_ros_topic_hz(topic_name)
+    try:
+        if not process_status['rosmaster']:  # prevent infinite loop
+            raise Exception("rosmaster died")
+        # check ros topic rate
+        for topic_name in rostopic_hz_checklist:
+            rostopic_hz[topic_name] = get_ros_topic_hz(topic_name)
+    except Exception as e:
+        print(e)
+        for topic_name in rostopic_hz_checklist:
+            if rostopic_hz.get(topic_name,None) != None:
+                continue  # skip those already acquired
+            rostopic_hz[topic_name] = 0
 
     return {
         "process_status": process_status,
