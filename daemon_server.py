@@ -41,7 +41,7 @@ def get_ros_topic_hz(topic_name):
     Returns: float, hz of the topic
 
     """
-    output = os.popen(f"rostopic hz {topic_name}").read()
+    output = os.popen(f"python ./ros_hz.py {topic_name}").read()
     # format lines into a list
     lines = output.split("\n")
     # filter out empty lines
