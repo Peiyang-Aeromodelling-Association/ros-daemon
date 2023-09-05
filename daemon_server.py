@@ -4,6 +4,7 @@ import uvicorn
 import yaml
 from fastapi import FastAPI
 from func_timeout import func_set_timeout
+from func_timeout.exceptions import FunctionTimeOut
 
 app = FastAPI()
 
@@ -75,7 +76,7 @@ async def get_status():
         # check ros topic rate
         for topic_name in rostopic_hz_checklist:
             rostopic_hz[topic_name] = get_ros_topic_hz(topic_name)
-    except Exception as e:
+    except (Exception, FunctionTimeOut) as e:
         print(e)
         for topic_name in rostopic_hz_checklist:
             if rostopic_hz.get(topic_name,None) != None:
