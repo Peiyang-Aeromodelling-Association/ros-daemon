@@ -1,5 +1,5 @@
 import os
-
+import threading
 import uvicorn
 import yaml
 from fastapi import FastAPI
@@ -32,6 +32,7 @@ def check_process_exists(process_name):
 
     return len(lines) > 0
 
+
 @func_set_timeout(6)
 def get_ros_topic_hz(topic_name):
     """
@@ -63,22 +64,34 @@ async def get_status():
     # check process
     process_checklist = config['process_checklist']
     process_status = {}
+
+    # use a thread for each process to check process status
+    threads = []
     for process_name in process_checklist:
-        process_status[process_name] = check_process_exists(process_name)
-    
-    
+        t = threading.Thread(target=lambda: process_status.update({process_name: check_process_exists(process_name)}))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
+
     rostopic_hz_checklist = config['rostopic_hz_checklist']
     rostopic_hz = {}
     try:
         if not process_status['rosmaster']:  # prevent infinite loop
             raise Exception("rosmaster died")
         # check ros topic rate
+        threads = []
         for topic_name in rostopic_hz_checklist:
-            rostopic_hz[topic_name] = get_ros_topic_hz(topic_name)
+            t = threading.Thread(target=lambda: rostopic_hz.update({topic_name: get_ros_topic_hz(topic_name)}))
+            threads.append(t)
+            t.start()
+        for t in threads:
+            t.join()
+
     except Exception as e:
         print(e)
         for topic_name in rostopic_hz_checklist:
-            if rostopic_hz.get(topic_name,None) != None:
+            if rostopic_hz.get(topic_name, None) is not None:
                 continue  # skip those already acquired
             rostopic_hz[topic_name] = 0
 

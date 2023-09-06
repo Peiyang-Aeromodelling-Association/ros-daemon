@@ -4,7 +4,6 @@ server_port: 5001
 # check if the process is running
 process_checklist:
   - "rosmaster"  # mandatory
-  - "baselink_updater"
   - "mavros"
   - "task_planner"
   - "trajectory_planner"
