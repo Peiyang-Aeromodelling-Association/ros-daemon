@@ -26,14 +26,15 @@ def ping(ip):
     """
     @func_set_timeout(5)
     def _ping(ip):
-        ret = os.system(f"ping {ip} -c 1")
-        if ret == 0:
+        output = os.popen(f"ping {ip} -c 1")
+
+        if "1 received" in output.read():
             return True
         else:
             return False
 
     try:
-        return _ping()
+        return _ping(ip)
     except FunctionTimedOut:
         return False
 
