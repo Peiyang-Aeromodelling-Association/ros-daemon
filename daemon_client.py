@@ -1,8 +1,10 @@
 import json
 import time
-
+import os
 import requests
 import yaml
+from func_timeout import func_set_timeout
+from func_timeout.exceptions import FunctionTimedOut
 from rich.align import Align
 from rich.console import Console
 from rich.table import Table
@@ -12,21 +14,44 @@ with open("config.yml", "r") as f:
     config = yaml.safe_load(f)
     print(f"{config}")
 
+
+def ping():
+    @func_set_timeout(5)
+    def _ping():
+        """
+        Ping the server
+        Returns: bool, True if ping success
+
+        """
+        ret = os.system(f"ping {config['server_ip']} -c 1")
+        if ret == 0:
+            return True
+        else:
+            return False
+
+    try:
+        return _ping()
+    except FunctionTimedOut:
+        return False
+
+
 if __name__ == "__main__":
+    request_cnt = 0
     while True:
+        request_cnt += 1
+        console.print(f"request_cnt: {request_cnt}", end="\r")
 
         connection_table = Table(show_header=True, header_style="bold magenta")
         connection_table.add_column("Connection", style="dim", width=60)
         connection_table.add_column("Status", justify="right", width=5)
-        
+
         process_table = Table(show_header=True, header_style="bold magenta")
         process_table.add_column("Process", style="dim", width=60)
-        process_table.add_column("Status", justify="right",width=5)
-        
+        process_table.add_column("Status", justify="right", width=5)
+
         rostopic_hz_table = Table(show_header=True, header_style="bold magenta")
         rostopic_hz_table.add_column("Topic", style="dim", width=60)
-        rostopic_hz_table.add_column("Rate(hz)", justify="right",width=5)
-    
+        rostopic_hz_table.add_column("Rate(hz)", justify="right", width=5)
 
         try:
             url = f"http://{config['server_ip']}:{config['server_port']}"
@@ -61,4 +86,3 @@ if __name__ == "__main__":
         console.print(Align.center(process_table, vertical="middle"))
         console.print(Align.center(rostopic_hz_table, vertical="middle"))
         time.sleep(1)
-

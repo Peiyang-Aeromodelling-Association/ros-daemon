@@ -3,3 +3,4 @@ uvicorn==0.23.2
 pyyaml
 rich==13.5.2
 func_timeout==4.3.5
+requests~=2.31.0

@@ -4,6 +4,7 @@ import uvicorn
 import yaml
 from fastapi import FastAPI
 from func_timeout import func_set_timeout
+from func_timeout.exceptions import FunctionTimedOut
 
 app = FastAPI()
 
@@ -33,7 +34,6 @@ def check_process_exists(process_name):
     return len(lines) > 0
 
 
-@func_set_timeout(6)
 def get_ros_topic_hz(topic_name):
     """
     Get the hz of a ros topic via command line: rostopic hz topic_name
@@ -43,20 +43,28 @@ def get_ros_topic_hz(topic_name):
     Returns: float, hz of the topic
 
     """
-    output = os.popen(f"python ./ros_hz.py {topic_name}").read()
-    # format lines into a list
-    lines = output.split("\n")
-    # filter out empty lines
-    lines = list(filter(lambda x: x != "", lines))
-    # filter out grep process
-    lines = list(filter(lambda x: "average rate" in x, lines))
-    # get the hz
+
+    @func_set_timeout(5)
+    def _get_ros_topic_hz(topic_name)
+        output = os.popen(f"python ./ros_hz.py {topic_name}").read()
+        # format lines into a list
+        lines = output.split("\n")
+        # filter out empty lines
+        lines = list(filter(lambda x: x != "", lines))
+        # filter out grep process
+        lines = list(filter(lambda x: "average rate" in x, lines))
+        # get the hz
+        try:
+            hz = float(lines[0].split(" ")[-1])
+        except Exception as e:  # IndexError
+            print(f"Error: {e}")
+            hz = 0.0
+        return hz
+
     try:
-        hz = float(lines[0].split(" ")[-1])
-    except Exception as e:  # IndexError
-        print(f"Error: {e}")
-        hz = 0.0
-    return hz
+        return _get_ros_topic_hz(topic_name)
+    except FunctionTimedOut:
+        return 0.0
 
 
 @app.get("/")
@@ -76,24 +84,15 @@ async def get_status():
 
     rostopic_hz_checklist = config['rostopic_hz_checklist']
     rostopic_hz = {}
-    try:
-        if not process_status['rosmaster']:  # prevent infinite loop
-            raise Exception("rosmaster died")
-        # check ros topic rate
-        threads = []
-        for topic_name in rostopic_hz_checklist:
-            t = threading.Thread(target=lambda: rostopic_hz.update({topic_name: get_ros_topic_hz(topic_name)}))
-            threads.append(t)
-            t.start()
-        for t in threads:
-            t.join()
 
-    except Exception as e:
-        print(e)
-        for topic_name in rostopic_hz_checklist:
-            if rostopic_hz.get(topic_name, None) is not None:
-                continue  # skip those already acquired
-            rostopic_hz[topic_name] = 0
+    # check ros topic rate
+    threads = []
+    for topic_name in rostopic_hz_checklist:
+        t = threading.Thread(target=lambda: rostopic_hz.update({topic_name: get_ros_topic_hz(topic_name)}))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
 
     return {
         "process_status": process_status,

@@ -12,6 +12,9 @@
 python3 daemon_server.py
 ```
 
+> [!NOTE]
+> `ros_hz.py`由`daemon_server.py`通过命令行调用，需要使用系统Python环境（Python 2.7 对于ROS Melodic）运行。
+
 ### Client端
 
 修改`config.yml`修改`server_ip`为Server端的IP地址，(不要含http://)。
