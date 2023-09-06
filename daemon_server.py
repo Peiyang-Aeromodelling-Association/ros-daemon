@@ -33,7 +33,6 @@ def check_process_exists(process_name):
 
     return len(lines) > 0
 
-
 def get_ros_topic_hz(topic_name):
     """
     Get the hz of a ros topic via command line: rostopic hz topic_name
@@ -45,7 +44,7 @@ def get_ros_topic_hz(topic_name):
     """
 
     @func_set_timeout(5)
-    def _get_ros_topic_hz(topic_name)
+    def _get_ros_topic_hz(topic_name):
         output = os.popen(f"python ./ros_hz.py {topic_name}").read()
         # format lines into a list
         lines = output.split("\n")

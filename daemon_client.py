@@ -15,15 +15,18 @@ with open("config.yml", "r") as f:
     print(f"{config}")
 
 
-def ping():
-    @func_set_timeout(5)
-    def _ping():
-        """
-        Ping the server
-        Returns: bool, True if ping success
+def ping(ip):
+    """
+    Ping the server
+    Args:
+        ip: the ip of the server
 
-        """
-        ret = os.system(f"ping {config['server_ip']} -c 1")
+    Returns: bool, True if ping success
+
+    """
+    @func_set_timeout(5)
+    def _ping(ip):
+        ret = os.system(f"ping {ip} -c 1")
         if ret == 0:
             return True
         else:
@@ -54,6 +57,12 @@ if __name__ == "__main__":
         rostopic_hz_table.add_column("Rate(hz)", justify="right", width=5)
 
         try:
+            ping_status = ping(config['server_ip'])
+            if ping_status:
+                connection_table.add_row(f"Ping: {config['server_ip']}", "[green]OK")
+            else:
+                connection_table.add_row(f"Ping: {config['server_ip']}", "[red]ERROR")
+
             url = f"http://{config['server_ip']}:{config['server_port']}"
             response = requests.get(url)
             status_dict = json.loads(response.content)
@@ -61,7 +70,7 @@ if __name__ == "__main__":
             # if code is 200, the connection is good, else the connection is bad
             if response.status_code == 200:
                 # print in "connection" part, name on the left and status on the right
-                connection_table.add_row(f"{config['server_ip']}:{config['server_port']}", "[green]OK")
+                connection_table.add_row(f"GET: {config['server_ip']}:{config['server_port']}", "[green]OK")
             else:
                 raise Exception(f"Connection Error: {response.status_code}")
 
