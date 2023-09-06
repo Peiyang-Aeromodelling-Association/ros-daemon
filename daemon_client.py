@@ -42,9 +42,7 @@ def ping(ip):
 if __name__ == "__main__":
     request_cnt = 0
     while True:
-        request_cnt += 1
-        console.print(f"request_cnt: {request_cnt}", end="\r")
-
+        
         connection_table = Table(show_header=True, header_style="bold magenta")
         connection_table.add_column("Connection", style="dim", width=60)
         connection_table.add_column("Status", justify="right", width=5)
@@ -86,13 +84,19 @@ if __name__ == "__main__":
             for topic_name, topic_hz in status_dict["rostopic_hz"].items():
                 rostopic_hz_table.add_row(topic_name, f"{topic_hz:.2f}")
         except Exception as e:
-            connection_table.add_row(f"{config['server_ip']}:{config['server_port']}", "[red]ERROR")
+            connection_table.add_row(f"GET: {config['server_ip']}:{config['server_port']}", "[red]ERROR")
             print(f"Error: {e}")
 
         # clear the console
         console.clear()
+ 
+       
         # display the table
         console.print(Align.center(connection_table, vertical="middle"))
         console.print(Align.center(process_table, vertical="middle"))
         console.print(Align.center(rostopic_hz_table, vertical="middle"))
+ 
+        console.print(f"request_cnt: {request_cnt}", end="\r")
+        request_cnt += 1
+        
         time.sleep(1)

@@ -45,7 +45,7 @@ def get_ros_topic_hz(topic_name):
 
     @func_set_timeout(5)
     def _get_ros_topic_hz(topic_name):
-        output = os.popen(f"python ./ros_hz.py {topic_name}").read()
+        output = os.popen(f"python2 ./ros_hz.py {topic_name}").read()
         # format lines into a list
         lines = output.split("\n")
         # filter out empty lines
@@ -53,16 +53,19 @@ def get_ros_topic_hz(topic_name):
         # filter out grep process
         lines = list(filter(lambda x: "average rate" in x, lines))
         # get the hz
+        if len(lines) == 0:
+            return 0.0
         try:
             hz = float(lines[0].split(" ")[-1])
         except Exception as e:  # IndexError
-            print(f"Error: {e}")
+            print(f"Error: _get_ros_topic_hz: {e}")
             hz = 0.0
         return hz
 
     try:
         return _get_ros_topic_hz(topic_name)
     except FunctionTimedOut:
+        print(f"{topic_name} timed out")
         return 0.0
 
 

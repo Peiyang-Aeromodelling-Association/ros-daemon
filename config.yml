@@ -1,7 +1,7 @@
 server_ip: 192.168.1.189
 server_port: 5001
 
-# check if the process is running
+# check if the process is running, NOTE: it is keyword matching, thus 'rosm' will match 'rosmaster' since it represents '*rosm*'
 process_checklist:
   - "rosmaster"  # mandatory
   - "mavros"
